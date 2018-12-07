@@ -48,7 +48,7 @@ public class BankIdSignatureValidatorTest {
     @Test
     public void givesErrorRegardingInvalidRootCertificate() {
         Document signatureFile = TestUtil.getSignatureDocument("/signatur_1_Anna_Andersson.xml");
-        // Use root cert for production
+        // Use root cert for production to force failure (files are created using test cert)
         BankIdSignatureValidator validator = new BankIdSignatureValidator(signatureFile, false);
         assertFalse(validator.validate());
         assertThat(validator.getValidationErrors(), hasItem("Certificate chain is invalid."));

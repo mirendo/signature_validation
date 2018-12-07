@@ -7,8 +7,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 
-public class DigestMaker {
-    public static String getEncodedDigest(InputStream data, String digestMethod) {
+class DigestMaker {
+    static String getEncodedDigest(InputStream data, String digestMethod) {
         try {
             Base64.Encoder encoder = Base64.getEncoder();
             byte[] bytes = getDigestBytes(IOUtils.toByteArray(data), digestMethod);

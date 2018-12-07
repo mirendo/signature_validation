@@ -7,14 +7,17 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AOSingleSignatureValidator {
     private final InputStream visibleData;
     private final String visibleDataDigestMethod;
     private final InputStream nonVisibleData;
     private final String nonVisibleDataDigestMethod;
-    private final InputStream signature;
     private boolean test;
+    private List<String> validationErrors = new ArrayList<>();
+    private final Document signatureDocument;
 
     public AOSingleSignatureValidator(InputStream visibleData, String visibleDataDigestMethod, InputStream nonVisibleData, String nonVisibleDataDigestMethod, InputStream signature) {
         this(visibleData, visibleDataDigestMethod, nonVisibleData, nonVisibleDataDigestMethod, signature, false);
@@ -25,21 +28,47 @@ public class AOSingleSignatureValidator {
         this.visibleDataDigestMethod = visibleDataDigestMethod;
         this.nonVisibleData = nonVisibleData;
         this.nonVisibleDataDigestMethod = nonVisibleDataDigestMethod;
-        this.signature = signature;
         this.test = test;
+        this.signatureDocument = parseSignatureFile(signature);
     }
 
     public boolean validate() {
-        String visibleDataDigest = DigestMaker.getEncodedDigest(visibleData, visibleDataDigestMethod);
+        checkVisibleData();
+        checkNonVisibleData();
+        validateSignature();
+
+        return validationErrors.isEmpty();
+    }
+
+    private void validateSignature() {
+        BankIdSignatureValidator validator = new BankIdSignatureValidator(signatureDocument, test);
+        if (!validator.validate()) {
+            validationErrors.addAll(validator.getValidationErrors());
+        }
+    }
+
+    private void checkVisibleData() {
+        compareData(
+                visibleData,
+                visibleDataDigestMethod,
+                "//*[local-name()='Signature']/*[local-name()='Object']/*[local-name()='bankIdSignedData']/*[local-name()='usrVisibleData']/text()",
+                "User visible data in external file does not match signature file.");
+    }
+
+    private void checkNonVisibleData() {
+        compareData(
+                nonVisibleData,
+                nonVisibleDataDigestMethod,
+                "//*[local-name()='Signature']/*[local-name()='Object']/*[local-name()='bankIdSignedData']/*[local-name()='usrNonVisibleData']/text()",
+                "Non-visible data in external file does not match signature file.");
+    }
+
+    private void compareData(InputStream nonVisibleData, String nonVisibleDataDigestMethod, String xPath, String errorMessage) {
         String nonVisibleDataDigest = DigestMaker.getEncodedDigest(nonVisibleData, nonVisibleDataDigestMethod);
-        Document signatureDocument = parseSignatureFile(signature);
-
-        String visibleDataFromSignatureFile = getXPath(signatureDocument, "//*[local-name()='Signature']/*[local-name()='Object']/*[local-name()='bankIdSignedData']/*[local-name()='usrVisibleData']/text()");
-        String nonVisibleDataFromSignatureFile = getXPath(signatureDocument, "//*[local-name()='Signature']/*[local-name()='Object']/*[local-name()='bankIdSignedData']/*[local-name()='usrNonVisibleData']/text()");
-
-        return visibleDataDigest.equals(visibleDataFromSignatureFile)
-                && nonVisibleDataDigest.equals(nonVisibleDataFromSignatureFile)
-                && new BankIdSignatureValidator(signatureDocument, test).validate();
+        String nonVisibleDataFromSignatureFile = getXPath(signatureDocument, xPath);
+        if (!nonVisibleDataDigest.equals(nonVisibleDataFromSignatureFile)) {
+            validationErrors.add(errorMessage);
+        }
     }
 
     private String getXPath(Document document, String path) {
@@ -62,5 +91,9 @@ public class AOSingleSignatureValidator {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public List<String> getValidationErrors() {
+        return validationErrors;
     }
 }
