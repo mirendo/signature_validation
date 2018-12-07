@@ -1,0 +1,22 @@
+{
+  "documents": [
+    {
+      "name": "original_årsredovisning.xhtml",
+      "type": "original_xbrl",
+      "digest_method": "sha256"
+    },
+    {
+      "name": "styrelseledamot_vd_visible_data.txt",
+      "type": "board_ceo_visible_data",
+      "digest_method": "plaintext"
+    }
+  ],
+  "signatures": [
+    {
+      "full_name": "Anna Andersson",
+      "signature_file": "signatur_1_Anna_Andersson.xml",
+      "visible_data": "styrelseledamot_vd_visible_data.txt",
+      "non_visible_data": "original_årsredovisning.xhtml"
+    }
+  ]
+}
