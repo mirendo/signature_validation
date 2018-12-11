@@ -1,5 +1,7 @@
 package se.arsredovisning_online.signature_validator;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Document;
 
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -18,6 +20,7 @@ public class AOSingleSignatureValidator {
     private boolean test;
     private List<String> validationErrors = new ArrayList<>();
     private final Document signatureDocument;
+    private Logger logger = LogManager.getLogger(AOSingleSignatureValidator.class);
 
     public AOSingleSignatureValidator(InputStream visibleData, String visibleDataDigestMethod, InputStream nonVisibleData, String nonVisibleDataDigestMethod, InputStream signature) {
         this(visibleData, visibleDataDigestMethod, nonVisibleData, nonVisibleDataDigestMethod, signature, false);
@@ -48,27 +51,34 @@ public class AOSingleSignatureValidator {
     }
 
     private void checkVisibleData() {
-        compareData(
+        if (compareData(
                 visibleData,
                 visibleDataDigestMethod,
                 "//*[local-name()='Signature']/*[local-name()='Object']/*[local-name()='bankIdSignedData']/*[local-name()='usrVisibleData']/text()",
-                "User visible data in external file does not match signature file.");
+                "User visible data in external file does not match signature file.")) {
+            logger.debug("User visible data in external file matches signature file.");
+        }
     }
 
     private void checkNonVisibleData() {
-        compareData(
+        if (compareData(
                 nonVisibleData,
                 nonVisibleDataDigestMethod,
                 "//*[local-name()='Signature']/*[local-name()='Object']/*[local-name()='bankIdSignedData']/*[local-name()='usrNonVisibleData']/text()",
-                "Non-visible data in external file does not match signature file.");
+                "Non-visible data in external file does not match signature file.")) {
+            logger.debug("Non-visible data in external file matches signature file.");
+        }
     }
 
-    private void compareData(InputStream nonVisibleData, String nonVisibleDataDigestMethod, String xPath, String errorMessage) {
+    private boolean compareData(InputStream nonVisibleData, String nonVisibleDataDigestMethod, String xPath, String errorMessage) {
         String nonVisibleDataDigest = DigestMaker.getEncodedDigest(nonVisibleData, nonVisibleDataDigestMethod);
         String nonVisibleDataFromSignatureFile = getXPath(signatureDocument, xPath);
-        if (!nonVisibleDataDigest.equals(nonVisibleDataFromSignatureFile)) {
+        boolean valid = nonVisibleDataDigest.equals(nonVisibleDataFromSignatureFile);
+        if (!valid) {
             validationErrors.add(errorMessage);
+            logger.debug(errorMessage);
         }
+        return valid;
     }
 
     private String getXPath(Document document, String path) {

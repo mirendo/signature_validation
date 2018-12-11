@@ -1,5 +1,7 @@
 package se.arsredovisning_online.signature_validator;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.pdfbox.cos.COSInputStream;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDEmbeddedFilesNameTreeNode;
@@ -14,6 +16,7 @@ public class AOSignedPdfValidator {
     private final PDDocument document;
     private final boolean test;
     private List<String> validationErrors = new ArrayList<>();
+    private Logger logger = LogManager.getLogger(AOSignedPdfValidator.class);
 
     public AOSignedPdfValidator(InputStream pdf) throws IOException {
         this(pdf, false);
@@ -31,12 +34,15 @@ public class AOSignedPdfValidator {
     }
 
     private void validateSignatures() {
+        logger.info("Validating embedded signatures.");
         Manifest manifest = extractManifest();
         if (manifest != null) {
             for (Manifest.Signature signature : manifest.getSignatures()) {
                 String visibleDataFilename = signature.getVisibleData();
                 String nonVisibleDataFilename = signature.getNonVisibleData();
                 String signatureFilename = signature.getSignatureFile();
+
+                logger.info("Validating " + signatureFilename);
 
                 InputStream visibleDataStream = getEmbeddedFileAsStream(visibleDataFilename);
                 InputStream nonVisibleDataStream = getEmbeddedFileAsStream(nonVisibleDataFilename);
@@ -66,10 +72,12 @@ public class AOSignedPdfValidator {
     }
 
     private void validateSeal() {
+        logger.info("PDF signature validation not yet implemented.");
         // TODO: Validate
     }
 
     private Manifest extractManifest() {
+        logger.debug("Reading manifest file");
         COSInputStream manifestStream = getEmbeddedFileAsStream("manifest.json");
         if (manifestStream != null) {
             return Manifest.createFromStream(manifestStream);

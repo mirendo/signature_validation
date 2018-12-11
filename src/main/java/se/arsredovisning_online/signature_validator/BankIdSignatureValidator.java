@@ -1,5 +1,7 @@
 package se.arsredovisning_online.signature_validator;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.w3c.dom.*;
 
 import javax.xml.crypto.*;
@@ -32,6 +34,7 @@ public class BankIdSignatureValidator {
     private InputStream signatureFile;
     private Document document;
     private boolean test;
+    private Logger logger = LogManager.getLogger(BankIdSignatureValidator.class);
 
     public BankIdSignatureValidator(Document document) {
         this(document, false);
@@ -51,7 +54,7 @@ public class BankIdSignatureValidator {
         try {
             return validateSignature();
         } catch (Exception e) {
-            validationErrors.add(e.getMessage());
+            addError(e.getMessage());
             return false;
         }
     }
@@ -67,7 +70,13 @@ public class BankIdSignatureValidator {
         if (!isValid) {
             createErrorInfo(valContext, signature);
         }
-        return isValid && validationErrors.isEmpty();
+        if (isValid && validationErrors.isEmpty()) {
+            logger.debug("Signature is valid.");
+            return true;
+        } else {
+            logger.debug("Signature is not valid.");
+            return false;
+        }
     }
 
     private Node getSignatureElement(Document doc) {
@@ -92,7 +101,7 @@ public class BankIdSignatureValidator {
 
     private void createErrorInfo(DOMValidateContext valContext, XMLSignature signature) throws XMLSignatureException {
         if (!signature.getSignatureValue().validate(valContext)) {
-            validationErrors.add("Signature is not valid.");
+            addError("Signature is not valid.");
         }
 
         List refs = signature.getSignedInfo().getReferences();
@@ -103,6 +112,11 @@ public class BankIdSignatureValidator {
                 validationErrors.add("Reference with uri \"" + reference.getURI() + "\" is not valid.");
             }
         }
+    }
+
+    private boolean addError(String message) {
+        logger.debug(message);
+        return validationErrors.add(message);
     }
 
     private void hackDocumentIdAttribute(Document document) {
@@ -146,7 +160,7 @@ public class BankIdSignatureValidator {
                                 try {
                                     prevCertificate.verify(cert.getPublicKey());
                                 } catch (Exception e) {
-                                    validationErrors.add("Certificate chain is invalid.");
+                                    addError("Certificate chain is invalid.");
                                 }
                             }
                             prevCertificate = cert;
@@ -159,7 +173,7 @@ public class BankIdSignatureValidator {
                 try {
                     prevCertificate.verify(getRootCertificate().getPublicKey());
                 } catch (Exception e) {
-                    validationErrors.add("Certificate chain is invalid.");
+                    addError("Certificate chain is invalid.");
                 }
             }
 
