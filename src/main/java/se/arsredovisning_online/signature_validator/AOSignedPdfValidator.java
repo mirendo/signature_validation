@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AOSignedPdfValidator {
-    private final PDDocument document;
+    private InputStream pdf;
     private final boolean test;
     private List<String> validationErrors = new ArrayList<>();
     private Logger logger = LogManager.getLogger(AOSignedPdfValidator.class);
@@ -23,7 +23,7 @@ public class AOSignedPdfValidator {
     }
 
     public AOSignedPdfValidator(InputStream pdf, boolean test) throws IOException {
-        this.document = PDDocument.load(pdf);
+        this.pdf = pdf;
         this.test = test;
     }
 
@@ -34,32 +34,40 @@ public class AOSignedPdfValidator {
     }
 
     private void validateSignatures() {
-        logger.info("Validating embedded signatures.");
-        Manifest manifest = extractManifest();
-        if (manifest != null) {
-            for (Manifest.Signature signature : manifest.getSignatures()) {
-                String visibleDataFilename = signature.getVisibleData();
-                String nonVisibleDataFilename = signature.getNonVisibleData();
-                String signatureFilename = signature.getSignatureFile();
+        try (PDDocument document = PDDocument.load(pdf)) {
+            logger.info("Validating embedded signatures.");
+            Manifest manifest = extractManifest(document);
+            if (manifest != null) {
+                for (Manifest.Signature signature : manifest.getSignatures()) {
+                    String visibleDataFilename = signature.getVisibleData();
+                    String nonVisibleDataFilename = signature.getNonVisibleData();
+                    String signatureFilename = signature.getSignatureFile();
 
-                logger.info("Validating " + signatureFilename);
+                    logger.info("Validating " + signatureFilename);
 
-                InputStream visibleDataStream = getEmbeddedFileAsStream(visibleDataFilename);
-                InputStream nonVisibleDataStream = getEmbeddedFileAsStream(nonVisibleDataFilename);
-                InputStream signatureStream = getEmbeddedFileAsStream(signatureFilename);
+                    InputStream visibleDataStream = getEmbeddedFileAsStream(document, visibleDataFilename);
+                    InputStream nonVisibleDataStream = getEmbeddedFileAsStream(document, nonVisibleDataFilename);
+                    InputStream signatureStream = getEmbeddedFileAsStream(document, signatureFilename);
 
-                AOSingleSignatureValidator signatureValidator = new AOSingleSignatureValidator(
-                        visibleDataStream,
-                        getDigestMethod(visibleDataFilename, manifest),
-                        nonVisibleDataStream,
-                        getDigestMethod(nonVisibleDataFilename, manifest),
-                        signatureStream, test);
-                if (!signatureValidator.validate()) {
-                    validationErrors.add("Validation of signature " + signatureFilename + " failed.");
-                    validationErrors.addAll(signatureValidator.getValidationErrors());
+                    AOSingleSignatureValidator signatureValidator = new AOSingleSignatureValidator(
+                            visibleDataStream,
+                            getDigestMethod(visibleDataFilename, manifest),
+                            nonVisibleDataStream,
+                            getDigestMethod(nonVisibleDataFilename, manifest),
+                            signatureStream, test);
+                    if (!signatureValidator.validate()) {
+                        addError(signatureFilename);
+                        validationErrors.addAll(signatureValidator.getValidationErrors());
+                    }
                 }
             }
+        } catch (IOException e) {
+            addError(e.getMessage());
         }
+    }
+
+    private void addError(String message) {
+        validationErrors.add("Validation of signature " + message + " failed.");
     }
 
     private String getDigestMethod(String visibleDataFilename, Manifest manifest) {
@@ -76,9 +84,9 @@ public class AOSignedPdfValidator {
         // TODO: Validate
     }
 
-    private Manifest extractManifest() {
+    private Manifest extractManifest(PDDocument document) {
         logger.debug("Reading manifest file");
-        COSInputStream manifestStream = getEmbeddedFileAsStream("manifest.json");
+        COSInputStream manifestStream = getEmbeddedFileAsStream(document, "manifest.json");
         if (manifestStream != null) {
             return Manifest.createFromStream(manifestStream);
         } else {
@@ -87,7 +95,7 @@ public class AOSignedPdfValidator {
         }
     }
 
-    private COSInputStream getEmbeddedFileAsStream(String filename) {
+    private COSInputStream getEmbeddedFileAsStream(PDDocument document, String filename) {
         PDEmbeddedFilesNameTreeNode embeddedFiles = document.getDocumentCatalog().getNames().getEmbeddedFiles();
         if (embeddedFiles == null) {
             validationErrors.add("No attachments in pdf.");
