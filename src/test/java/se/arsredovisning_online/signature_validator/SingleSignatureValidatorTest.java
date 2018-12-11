@@ -30,7 +30,7 @@ public class SingleSignatureValidatorTest {
         SingleSignatureValidator validator = new SingleSignatureValidator(visibleData, "plaintext", nonVisibleData, "sha256", signature, true);
 
         assertFalse(validator.validate());
-        assertThat(validator.getValidationErrors(), hasItem("User visible data in external file does not match signature file."));
+        assertThat(validator.getValidationErrors(), hasItem("Synligt data (\"user visible data\") i separat fil matchar inte signaturfilen."));
     }
 
     @Test
@@ -41,7 +41,7 @@ public class SingleSignatureValidatorTest {
         SingleSignatureValidator validator = new SingleSignatureValidator(visibleData, "plaintext", nonVisibleData, "sha256", signature, true);
 
         assertFalse(validator.validate());
-        assertThat(validator.getValidationErrors(), hasItem("Non-visible data in external file does not match signature file."));
+        assertThat(validator.getValidationErrors(), hasItem("Osynligt data (\"non-visible data\") i separat fil matchar inte signaturfilen."));
     }
 
     @Test

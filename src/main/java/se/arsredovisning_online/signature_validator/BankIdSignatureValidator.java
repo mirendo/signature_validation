@@ -101,7 +101,7 @@ public class BankIdSignatureValidator {
 
     private void createErrorInfo(DOMValidateContext valContext, XMLSignature signature) throws XMLSignatureException {
         if (!signature.getSignatureValue().validate(valContext)) {
-            addError("Signaturen är giltig.");
+            addError("Signaturen är ogiltig.");
         }
 
         List refs = signature.getSignedInfo().getReferences();

@@ -139,9 +139,7 @@ public class SignedPdfValidator {
 
         if (argList.size() != 1) {
             System.out.println("Användning: ");
-            System.out.println(SignedPdfValidator.class.getCanonicalName() + " [-v] pdf-file");
-            System.out.println("   alternativt ");
-            System.out.println("mvn run [-v] pdf-file");
+            System.out.println("java " + SignedPdfValidator.class.getCanonicalName() + " [-v] pdf-file");
             exit(1);
         }
 

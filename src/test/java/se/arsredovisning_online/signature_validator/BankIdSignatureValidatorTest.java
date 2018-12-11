@@ -26,7 +26,7 @@ public class BankIdSignatureValidatorTest {
         Document signatureFile = TestUtil.getSignatureDocument("/invalid_signature.xml");
         BankIdSignatureValidator validator = new BankIdSignatureValidator(signatureFile, true);
         assertFalse(validator.validate());
-        assertThat(validator.getValidationErrors(), hasItem("Signature is not valid."));
+        assertThat(validator.getValidationErrors(), hasItem("Signaturen är ogiltig."));
     }
 
     @Test
@@ -34,7 +34,7 @@ public class BankIdSignatureValidatorTest {
         Document signatureFile = TestUtil.getSignatureDocument("/invalid_key_info.xml");
         BankIdSignatureValidator validator = new BankIdSignatureValidator(signatureFile, true);
         assertFalse(validator.validate());
-        assertThat(validator.getValidationErrors(), hasItem("Reference with uri \"#bidKeyInfo\" is not valid."));
+        assertThat(validator.getValidationErrors(), hasItem("Referens med uri \"#bidKeyInfo\" är inte giltig."));
     }
 
     @Test
@@ -42,7 +42,7 @@ public class BankIdSignatureValidatorTest {
         Document signatureFile = TestUtil.getSignatureDocument("/invalid_signed_data.xml");
         BankIdSignatureValidator validator = new BankIdSignatureValidator(signatureFile, true);
         assertFalse(validator.validate());
-        assertThat(validator.getValidationErrors(), hasItem("Reference with uri \"#bidSignedData\" is not valid."));
+        assertThat(validator.getValidationErrors(), hasItem("Referens med uri \"#bidSignedData\" är inte giltig."));
     }
 
     @Test
@@ -51,6 +51,6 @@ public class BankIdSignatureValidatorTest {
         // Use root cert for production to force failure (files are created using test cert)
         BankIdSignatureValidator validator = new BankIdSignatureValidator(signatureFile, false);
         assertFalse(validator.validate());
-        assertThat(validator.getValidationErrors(), hasItem("Certificate chain is invalid."));
+        assertThat(validator.getValidationErrors(), hasItem("Certifikatkedjan är inte giltig."));
     }
 }
