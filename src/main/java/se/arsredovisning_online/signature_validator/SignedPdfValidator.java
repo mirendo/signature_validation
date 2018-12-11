@@ -1,17 +1,25 @@
 package se.arsredovisning_online.signature_validator;
 
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.config.Configurator;
+import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.pdfbox.cos.COSInputStream;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDEmbeddedFilesNameTreeNode;
 import org.apache.pdfbox.pdmodel.common.filespecification.PDComplexFileSpecification;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import static java.lang.System.exit;
 
 public class SignedPdfValidator {
     private InputStream pdf;
@@ -110,5 +118,35 @@ public class SignedPdfValidator {
             }
         }
         return null;
+    }
+
+    public static void main(String[] args) throws IOException {
+        List<String> argList = new ArrayList<>(Arrays.asList(args));
+        if (argList.contains("-v")) {
+            LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+            Configuration config = ctx.getConfiguration();
+            LoggerConfig loggerConfig = config.getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
+            loggerConfig.setLevel(Level.DEBUG);
+            ctx.updateLoggers();
+            argList.remove("-v");
+        }
+
+        boolean test = false;
+        if (argList.contains("-t")) {
+            test = true;
+            argList.remove("-t");
+        }
+
+        if (argList.size() != 1) {
+            System.out.println("Usage: " + SignedPdfValidator.class.getCanonicalName() + " [-v] pdf-file");
+            exit(1);
+        }
+
+        SignedPdfValidator validator = new SignedPdfValidator(new FileInputStream(argList.get(0)), test);
+        if (validator.validate()) {
+            System.out.println("Valid");
+        } else {
+            System.out.println("Not valid");
+        }
     }
 }

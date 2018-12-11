@@ -132,6 +132,9 @@ public class BankIdSignatureValidator {
     }
 
     private Certificate getRootCertificate() throws CertificateException {
+        if (test) {
+            logger.debug("Using BankID test root certificate.");
+        }
         byte[] bytes = test ? Base64.getMimeDecoder().decode(BANKID_ROOT_CERT_TEST) : Base64.getDecoder().decode(BANKID_ROOT_CERT);
         CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
         return certificateFactory.generateCertificate(new java.io.ByteArrayInputStream(bytes));
