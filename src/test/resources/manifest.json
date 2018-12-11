@@ -1,1 +1,32 @@
-{"documents":[{"name":"styrelseledamot_vd_visible_data.txt","type":"board_ceo_visible_data","digest_method":"plaintext"},{"name":"original_årsredovisning.xhtml","type":"original_xbrl","digest_method":"sha256"}],"signatures":[{"signature_file":"signatur_1_Anna_Andersson.xml","visible_data":"styrelseledamot_vd_visible_data.txt","non_visible_data":"original_årsredovisning.xhtml"}]}
+{
+  "documents": [
+    {
+      "name": "styrelseledamot_vd_visible_data.txt",
+      "type": "board_ceo_visible_data",
+      "digest_method": "plaintext"
+    },
+    {
+      "name": "original_årsredovisning.xhtml",
+      "type": "original_xbrl",
+      "digest_method": "sha256"
+    }
+  ],
+  "signatures": [
+    {
+      "first_name": "Anna",
+      "last_name": "Andersson",
+      "signed_at": "2018-12-11T09:19:46+01:00",
+      "signature_file": "signatur_1_Anna_Andersson.xml",
+      "visible_data": "styrelseledamot_vd_visible_data.txt",
+      "non_visible_data": "original_årsredovisning.xhtml"
+    },
+    {
+      "first_name": "Karl",
+      "last_name": "Karlsson",
+      "signed_at": "2018-12-11T09:19:46+01:00",
+      "signature_file": "signatur_2_Karl_Karlsson.xml",
+      "visible_data": "styrelseledamot_vd_visible_data.txt",
+      "non_visible_data": "original_årsredovisning.xhtml"
+    }
+  ]
+}
