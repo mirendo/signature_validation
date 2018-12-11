@@ -71,10 +71,10 @@ public class BankIdSignatureValidator {
             createErrorInfo(valContext, signature);
         }
         if (isValid && validationErrors.isEmpty()) {
-            logger.debug("Signature is valid.");
+            logger.debug("Signaturen är giltig.");
             return true;
         } else {
-            logger.debug("Signature is not valid.");
+            logger.debug("Signaturen är ogiltig.");
             return false;
         }
     }
@@ -82,7 +82,7 @@ public class BankIdSignatureValidator {
     private Node getSignatureElement(Document doc) {
         NodeList nl = doc.getElementsByTagNameNS(XMLSignature.XMLNS, "Signature");
         if (nl.getLength() == 0) {
-            throw new RuntimeException("Cannot find Signature element");
+            throw new RuntimeException("Hittar inte <Signature>-elementet i filen.");
         }
         return nl.item(0);
     }
@@ -101,7 +101,7 @@ public class BankIdSignatureValidator {
 
     private void createErrorInfo(DOMValidateContext valContext, XMLSignature signature) throws XMLSignatureException {
         if (!signature.getSignatureValue().validate(valContext)) {
-            addError("Signature is not valid.");
+            addError("Signaturen är giltig.");
         }
 
         List refs = signature.getSignedInfo().getReferences();
@@ -109,7 +109,7 @@ public class BankIdSignatureValidator {
             Reference reference = (Reference) item;
 
             if (!reference.validate(valContext)) {
-                validationErrors.add("Reference with uri \"" + reference.getURI() + "\" is not valid.");
+                validationErrors.add("Referens med uri \"" + reference.getURI() + "\" är inte giltig.");
             }
         }
     }
@@ -133,7 +133,7 @@ public class BankIdSignatureValidator {
 
     private Certificate getRootCertificate() throws CertificateException {
         if (test) {
-            logger.debug("Using BankID test root certificate.");
+            logger.debug("Använder BankID:s rotcertifikat för testmiljön.");
         }
         byte[] bytes = test ? Base64.getMimeDecoder().decode(BANKID_ROOT_CERT_TEST) : Base64.getDecoder().decode(BANKID_ROOT_CERT);
         CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
@@ -143,7 +143,7 @@ public class BankIdSignatureValidator {
     private class CertificatePublicKeySelector extends KeySelector {
         public KeySelectorResult select(KeyInfo keyInfo, KeySelector.Purpose purpose, AlgorithmMethod method, XMLCryptoContext context) throws KeySelectorException {
             if (keyInfo == null) {
-                throw new KeySelectorException("Null KeyInfo object!");
+                throw new KeySelectorException("KeyInfo saknas.");
             }
 
             X509Certificate firstCertificate = null;
@@ -163,7 +163,7 @@ public class BankIdSignatureValidator {
                                 try {
                                     prevCertificate.verify(cert.getPublicKey());
                                 } catch (Exception e) {
-                                    addError("Certificate chain is invalid.");
+                                    addError("Certifikatkedjan är inte giltig.");
                                 }
                             }
                             prevCertificate = cert;
@@ -176,14 +176,14 @@ public class BankIdSignatureValidator {
                 try {
                     prevCertificate.verify(getRootCertificate().getPublicKey());
                 } catch (Exception e) {
-                    addError("Certificate chain is invalid.");
+                    addError("Certifikatkedjan är inte giltig.");
                 }
             }
 
             if (firstCertificate != null) {
                 return new SimpleKeySelectorResult(firstCertificate.getPublicKey());
             } else {
-                throw new KeySelectorException("No certificate found");
+                throw new KeySelectorException("Hittar inget certifikat.");
             }
         }
     }

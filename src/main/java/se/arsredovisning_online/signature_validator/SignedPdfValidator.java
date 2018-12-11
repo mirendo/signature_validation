@@ -44,7 +44,7 @@ public class SignedPdfValidator {
 
     private void validateSignatures() {
         try (PDDocument document = PDDocument.load(pdf)) {
-            logger.info("Validating embedded signatures.");
+            logger.info("Validerar bifogade signaturer mot bifogade original.");
             Manifest manifest = extractManifest(document);
             if (manifest != null) {
                 for (Manifest.Signature signature : manifest.getSignatures()) {
@@ -52,7 +52,7 @@ public class SignedPdfValidator {
                     String nonVisibleDataFilename = signature.getNonVisibleData();
                     String signatureFilename = signature.getSignatureFile();
 
-                    logger.info("Validating " + signatureFilename);
+                    logger.info("Validerar " + signatureFilename);
 
                     InputStream visibleDataStream = getEmbeddedFileAsStream(document, visibleDataFilename);
                     InputStream nonVisibleDataStream = getEmbeddedFileAsStream(document, nonVisibleDataFilename);
@@ -65,7 +65,7 @@ public class SignedPdfValidator {
                             getDigestMethod(nonVisibleDataFilename, manifest),
                             signatureStream, test);
                     if (!signatureValidator.validate()) {
-                        addError(signatureFilename);
+                        addError("Validering av " + signatureFilename + " misslyckades.");
                         validationErrors.addAll(signatureValidator.getValidationErrors());
                     }
                 }
@@ -76,7 +76,7 @@ public class SignedPdfValidator {
     }
 
     private void addError(String message) {
-        validationErrors.add("Validation of signature " + message + " failed.");
+        validationErrors.add(message);
     }
 
     private String getDigestMethod(String visibleDataFilename, Manifest manifest) {
@@ -89,17 +89,17 @@ public class SignedPdfValidator {
     }
 
     private void validateSeal() {
-        logger.info("PDF signature validation not yet implemented.");
+        logger.info("Vi har ännu inte implementerat validering av PDF-filens signatur.");
         // TODO: Validate
     }
 
     private Manifest extractManifest(PDDocument document) {
-        logger.debug("Reading manifest file");
+        logger.debug("Läser innehållsförteckning.");
         COSInputStream manifestStream = getEmbeddedFileAsStream(document, "manifest.json");
         if (manifestStream != null) {
             return Manifest.createFromStream(manifestStream);
         } else {
-            validationErrors.add("PDF does not contain manifest file.");
+            validationErrors.add("PDF:en har ingen bifogad innehållsförteckning (manifest.json).");
             return null;
         }
     }
@@ -107,13 +107,13 @@ public class SignedPdfValidator {
     private COSInputStream getEmbeddedFileAsStream(PDDocument document, String filename) {
         PDEmbeddedFilesNameTreeNode embeddedFiles = document.getDocumentCatalog().getNames().getEmbeddedFiles();
         if (embeddedFiles == null) {
-            validationErrors.add("No attachments in pdf.");
+            validationErrors.add("PDF:en innehåller inga bifogade filer.");
         } else {
             try {
                 PDComplexFileSpecification manifestFileSpecification = embeddedFiles.getNames().get(filename);
                 return manifestFileSpecification.getEmbeddedFile().createInputStream();
             } catch (IOException e) {
-                validationErrors.add("Error extracting attchments from pdf.");
+                validationErrors.add("Misslyckades med att läsa bifogade filer.");
                 validationErrors.add(e.getMessage());
             }
         }
@@ -138,15 +138,18 @@ public class SignedPdfValidator {
         }
 
         if (argList.size() != 1) {
-            System.out.println("Usage: " + SignedPdfValidator.class.getCanonicalName() + " [-v] pdf-file");
+            System.out.println("Användning: ");
+            System.out.println(SignedPdfValidator.class.getCanonicalName() + " [-v] pdf-file");
+            System.out.println("   alternativt ");
+            System.out.println("mvn run [-v] pdf-file");
             exit(1);
         }
 
         SignedPdfValidator validator = new SignedPdfValidator(new FileInputStream(argList.get(0)), test);
         if (validator.validate()) {
-            System.out.println("Valid");
+            System.out.println("Signaturerna stämmer.");
         } else {
-            System.out.println("Not valid");
+            System.out.println("Signaturerna stämmer inte.");
         }
     }
 }

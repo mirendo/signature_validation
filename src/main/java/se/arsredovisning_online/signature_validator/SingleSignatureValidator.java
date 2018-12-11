@@ -55,8 +55,8 @@ public class SingleSignatureValidator {
                 visibleData,
                 visibleDataDigestMethod,
                 "//*[local-name()='Signature']/*[local-name()='Object']/*[local-name()='bankIdSignedData']/*[local-name()='usrVisibleData']/text()",
-                "User visible data in external file does not match signature file.")) {
-            logger.debug("User visible data in external file matches signature file.");
+                "Synligt data (\"user visible data\") i separat fil matchar inte signaturfilen.")) {
+            logger.debug("Synligt data (\"user visible data\") i separat fil matchar signaturfilen.");
         }
     }
 
@@ -65,8 +65,8 @@ public class SingleSignatureValidator {
                 nonVisibleData,
                 nonVisibleDataDigestMethod,
                 "//*[local-name()='Signature']/*[local-name()='Object']/*[local-name()='bankIdSignedData']/*[local-name()='usrNonVisibleData']/text()",
-                "Non-visible data in external file does not match signature file.")) {
-            logger.debug("Non-visible data in external file matches signature file.");
+                "Osynligt data (\"non-visible data\") i separat fil matchar inte signaturfilen.")) {
+            logger.debug("Osynligt data (\"non-visible data\") i separat fil matchar signaturfilen.");
         }
     }
 
@@ -96,8 +96,6 @@ public class SingleSignatureValidator {
 
         try {
             return dbf.newDocumentBuilder().parse(signatureAsStream);
-        } catch (RuntimeException e) {
-            throw e;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
