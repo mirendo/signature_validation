@@ -12,7 +12,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AOSingleSignatureValidator {
+public class SingleSignatureValidator {
     private final InputStream visibleData;
     private final String visibleDataDigestMethod;
     private final InputStream nonVisibleData;
@@ -20,13 +20,13 @@ public class AOSingleSignatureValidator {
     private boolean test;
     private List<String> validationErrors = new ArrayList<>();
     private final Document signatureDocument;
-    private Logger logger = LogManager.getLogger(AOSingleSignatureValidator.class);
+    private Logger logger = LogManager.getLogger(SingleSignatureValidator.class);
 
-    public AOSingleSignatureValidator(InputStream visibleData, String visibleDataDigestMethod, InputStream nonVisibleData, String nonVisibleDataDigestMethod, InputStream signature) {
+    public SingleSignatureValidator(InputStream visibleData, String visibleDataDigestMethod, InputStream nonVisibleData, String nonVisibleDataDigestMethod, InputStream signature) {
         this(visibleData, visibleDataDigestMethod, nonVisibleData, nonVisibleDataDigestMethod, signature, false);
     }
 
-    public AOSingleSignatureValidator(InputStream visibleData, String visibleDataDigestMethod, InputStream nonVisibleData, String nonVisibleDataDigestMethod, InputStream signature, boolean test) {
+    public SingleSignatureValidator(InputStream visibleData, String visibleDataDigestMethod, InputStream nonVisibleData, String nonVisibleDataDigestMethod, InputStream signature, boolean test) {
         this.visibleData = visibleData;
         this.visibleDataDigestMethod = visibleDataDigestMethod;
         this.nonVisibleData = nonVisibleData;

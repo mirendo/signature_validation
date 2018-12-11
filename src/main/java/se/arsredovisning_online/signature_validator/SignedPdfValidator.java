@@ -10,19 +10,20 @@ import org.apache.pdfbox.pdmodel.common.filespecification.PDComplexFileSpecifica
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-public class AOSignedPdfValidator {
+public class SignedPdfValidator {
     private InputStream pdf;
     private final boolean test;
     private List<String> validationErrors = new ArrayList<>();
-    private Logger logger = LogManager.getLogger(AOSignedPdfValidator.class);
+    private Logger logger = LogManager.getLogger(SignedPdfValidator.class);
 
-    public AOSignedPdfValidator(InputStream pdf) throws IOException {
+    public SignedPdfValidator(InputStream pdf) throws IOException {
         this(pdf, false);
     }
 
-    public AOSignedPdfValidator(InputStream pdf, boolean test) throws IOException {
+    public SignedPdfValidator(InputStream pdf, boolean test) throws IOException {
         this.pdf = pdf;
         this.test = test;
     }
@@ -49,7 +50,7 @@ public class AOSignedPdfValidator {
                     InputStream nonVisibleDataStream = getEmbeddedFileAsStream(document, nonVisibleDataFilename);
                     InputStream signatureStream = getEmbeddedFileAsStream(document, signatureFilename);
 
-                    AOSingleSignatureValidator signatureValidator = new AOSingleSignatureValidator(
+                    SingleSignatureValidator signatureValidator = new SingleSignatureValidator(
                             visibleDataStream,
                             getDigestMethod(visibleDataFilename, manifest),
                             nonVisibleDataStream,
