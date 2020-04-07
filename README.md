@@ -12,5 +12,5 @@ på hur sådan validering kan gå till.
 * Klona detta repo.
 * Kör `mvn package`
 * Kör `
-java -cp target/uber-signature_validator-0.1-SNAPSHOT.jar <pdf-fil>
+java -jar target/uber-signature_validator-0.1-SNAPSHOT.jar <pdf-fil>
 `

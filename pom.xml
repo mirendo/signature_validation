@@ -3,6 +3,16 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
+    <properties>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+    </properties>
+
+    <groupId>se.arsredovisning_online</groupId>
+    <artifactId>signature_validator</artifactId>
+    <version>0.1-SNAPSHOT</version>
+
     <build>
         <plugins>
             <plugin>
@@ -17,21 +27,16 @@
                     </execution>
                 </executions>
                 <configuration>
+                    <transformers>
+                        <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                            <mainClass>se.arsredovisning_online.signature_validator.SignedPdfValidator</mainClass>
+                        </transformer>
+                    </transformers>
                     <finalName>uber-${artifactId}-${version}</finalName>
                 </configuration>
             </plugin>
         </plugins>
     </build>
-
-
-    <properties>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-    </properties>
-
-    <groupId>se.arsredovisning_online</groupId>
-    <artifactId>signature_validator</artifactId>
-    <version>0.1-SNAPSHOT</version>
 
     <dependencies>
         <dependency>
